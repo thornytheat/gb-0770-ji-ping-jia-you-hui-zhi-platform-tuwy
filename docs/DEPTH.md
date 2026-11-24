@@ -13,6 +13,7 @@
 | M5 库存和签单对账 | 核对罐车与逐票签收差额 | `GET/POST /api/balance` | `app/settlement/inventory.py` `app/settlement/receipts.py` `app/settlement/report.py` | `tests/test_settlement.py` |
 | M6 批次留档复跑 | 保存清单与各阶段快照 | `POST /api/shifts` | `app/ledger/replay.py` `app/ledger/sqlite_book.py` | `tests/test_replay.py` |
 | M7 加注证据签发 | 固定签发证据并复验摘要 | `POST /api/shifts/{batch}/sign` | `app/dispatch/signatures.py` `app/dispatch/document.py` | `tests/test_dispatch.py` |
+| M8 错票撤销与原件核验 | 作废结算资格但保留追查线索 | `POST /api/shifts/{batch}/revoke` `GET /api/shifts/{batch}/export` | `app/dispatch/revocation.py` | `tests/test_revocation.py` |
 
 ## 陷阱登记
 
@@ -27,5 +28,8 @@
 | TRAP-15 | 密度混用 | 吨位严重误算 | 归一单位并做油种范围校验 | `app/conversion/standard.py` | `tests/test_mass.py::test_density_units_normalized` |
 | TRAP-23 | 票据正好位于切换点 | 重叠版本被算两次 | 左闭右开，扫描票内切点 | `app/meters/select.py` | `tests/test_versions.py::test_expiry_is_right_open` |
 | TRAP-25 | 多版本同时生效 | 配置文件顺序决定 | 高修订胜出，并列挂起 | `app/meters/select.py` | `tests/test_versions.py::test_overlap_higher_version_selected` |
+| TRAP-30 | 撤销即停查 | 追查线索随单据一起断掉 | 只作废结算资格，原件、快照、签名留痕可查，`verified` 与 `settleable` 分开判定 | `app/dispatch/revocation.py` | `tests/test_revocation.py::test_revoked_slip_still_queryable_but_not_settleable` |
+| TRAP-31 | 签发与撤销并发 | 撤销后仍签出可结算单 | 两者走 `BEGIN IMMEDIATE` 写锁串行，撤销成功后再签发返回 `REVOKED_BATCH` | `app/ledger/sqlite_book.py` `app/dispatch/signatures.py` | `tests/test_revocation.py::test_concurrent_sign_and_revoke_never_settleable_after_revoke` |
+| TRAP-32 | 撤销失败后重试打到新单 | 更正后的新批次被误撤 | `request_id` 首次到达即绑定批次（含 PENDING 留痕），换批次重试返回 `REVOKE_BATCH_MISMATCH` | `app/dispatch/revocation.py` | `tests/test_revocation.py::test_retry_of_old_request_cannot_revoke_new_slip` |
 
 样例包含 40 原件、35 采信、4 隔离和 1 重复。两辆库存可核车辆的 510000 g 等于 247600 g 发放、261000 g 期末与 1400 g 差额。另有 FT-23 的 16000 g 已核计量，库存缺期末锚点。

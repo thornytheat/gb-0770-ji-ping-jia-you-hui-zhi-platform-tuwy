@@ -1,5 +1,6 @@
-from flask import Blueprint, current_app, jsonify
+from flask import Blueprint, current_app, jsonify, request
 from app.bundles import submitted
+from app.dispatch.revocation import revoke
 from app.dispatch.signatures import evidence_file,sign
 from app.ledger.replay import list_shifts,replay,shift
 from app.shift import compute
@@ -55,6 +56,12 @@ def load(batch):
 @routes.post('/api/shifts/<batch>/sign')
 def issue(batch):
     return sign(current_app.book,batch)
+
+
+@routes.post('/api/shifts/<batch>/revoke')
+def cancel(batch):
+    body = request.get_json(silent=True) or {}
+    return revoke(current_app.book,batch,body.get('request_id'),body.get('reason',''))
 
 
 @routes.get('/api/shifts/<batch>/export')

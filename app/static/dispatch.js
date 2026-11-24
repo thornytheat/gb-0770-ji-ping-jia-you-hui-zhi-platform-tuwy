@@ -42,3 +42,16 @@ bind('#signature', async () => {
   exportLink.hidden = false;
   status.textContent = `证据已签发 · 待复核 ${result.open_items} 票`;
 });
+
+bind('#revocation', async form => {
+  const batch = pick.value;
+  const payload = {request_id: form.querySelector('#request-id').value.trim(),
+                   reason: form.querySelector('#reason').value.trim()};
+  if (!payload.request_id) throw new Error('撤销请求号必填，重试时请使用同一请求号');
+  const result = await post(`/api/shifts/${batch}/revoke`, payload);
+  const output = document.querySelector('#revoke-result');
+  output.textContent = `${result.reused ? '重试命中原撤销' : '已撤销'} · ${result.revoked_at} · ${result.checksum.slice(0,12)}`;
+  status.textContent = '该批次仅留档可查，不再具备结算资格';
+  const chosen = pick.selectedOptions[0];
+  if (chosen) { chosen.dataset.revoked = 'true'; chosen.textContent = chosen.textContent.replace(/待签发|已签发/, '已撤销'); }
+});

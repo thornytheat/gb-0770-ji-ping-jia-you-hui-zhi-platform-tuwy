@@ -1,3 +1,5 @@
-<div class="double-book"><section class="panel"><h3>机坪加注证据单</h3>{% if runs %}<form id="signature"><label for="batch">交班批次</label><select id="batch">{% for run in runs %}<option value="{{ run.batch }}" {{ 'selected' if run.batch==current }}>{{ run.batch[:15] }} · {{ run.totals.difference_g|kg }} kg</option>{% endfor %}</select><button>签发交班证据</button></form>
-<p><output id="checksum"></output></p><a id="export-slip" hidden>下载签发单</a>{% else %}<p>请先归档交班账。</p>{% endif %}</section>
-<section class="panel"><h3>随件联单</h3><ul><li>量程选版与测量原件</li><li>签收比对与罐车收发</li><li>异常和未闭合库存</li></ul></section></div>
+<div class="double-book"><section class="panel"><h3>机坪加注证据单</h3>{% if runs %}<form id="signature"><label for="batch">交班批次</label><select id="batch">{% for run in runs %}<option value="{{ run.batch }}" data-revoked="{{ run.revoked|lower }}" {{ 'selected' if run.batch==current }}>{{ run.batch[:15] }} · {{ run.totals.difference_g|kg }} kg · {% if run.revoked %}已撤销{% elif run.signed %}已签发{% else %}待签发{% endif %}</option>{% endfor %}</select><button>签发交班证据</button></form>
+<p><output id="checksum"></output></p><a id="export-slip" hidden>下载签发单</a>
+<h3>错票撤销</h3><form id="revocation"><label for="request-id">撤销请求号</label><input id="request-id" name="request_id" required placeholder="同一请求号重试只认原批次"><label for="reason">撤销原因</label><input id="reason" name="reason" placeholder="错票撤销"><button type="submit">撤销结算资格</button></form>
+<p><output id="revoke-result"></output></p>{% else %}<p>请先归档交班账。</p>{% endif %}</section>
+<section class="panel"><h3>核验口径</h3><ul><li>内容是否属实：复验签发摘要（verified）</li><li>单据能否结算：未撤销且复验通过（settleable）</li><li>撤销只作废结算资格，原件与追查线索保留可查</li><li>撤销成功后旧批次不能再签出可结算单</li><li>更正错票重新归档得到新批次，可正常签发</li></ul></section></div>

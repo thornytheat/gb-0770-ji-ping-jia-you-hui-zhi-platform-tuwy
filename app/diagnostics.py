@@ -9,6 +9,8 @@ REASONS = {
     'TEMPERATURE':'油温超出模型范围', 'FUEL':'未配置该油种', 'NO_RECEIPT':'缺少签收回执',
     'SIGN_TRUCK':'计量票与回执车号不一致', 'NO_METER':'签收缺少可计发放票', 'SIGN_DIFF':'签收差超过允许误差',
     'STOCK_ANCHORS':'缺少唯一的期初或期末库存', 'NO_BATCH':'没有此交班归档', 'NOT_SIGNED':'证据单尚未签发',
+    'REVOKED_BATCH':'该批次证据单已撤销，不能再签发可结算单据', 'REVOKE_REQUEST':'撤销请求缺少有效的请求标识',
+    'REVOKE_BATCH_MISMATCH':'同一撤销请求的重试只能针对原批次，不能撤掉新单',
 }
 
 

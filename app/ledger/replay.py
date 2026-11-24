@@ -30,7 +30,13 @@ def replay(book, inputs):
 
 def list_shifts(book):
     with book.connection() as db:
-        return [json.loads(item[0]) for item in db.execute('SELECT manifest FROM shifts ORDER BY rowid DESC LIMIT 25')]
+        items = [json.loads(item[0]) for item in db.execute('SELECT manifest FROM shifts ORDER BY rowid DESC LIMIT 25')]
+        revoked = {mark[0] for mark in db.execute("SELECT DISTINCT digest FROM revoke_requests WHERE status='DONE'")}
+        signed = {mark[0] for mark in db.execute('SELECT DISTINCT digest FROM signatures')}
+    for item in items:
+        item['revoked'] = item['batch'] in revoked
+        item['signed'] = item['batch'] in signed
+    return items
 
 
 def shift(book, batch):
